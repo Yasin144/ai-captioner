@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             }
 
-            statusText.innerHTML = "Loading Whisper AI English Engine (~145MB)...";
+            statusText.innerHTML = "Loading Whisper AI English Engine (~45MB)...";
             
             // Promise wrapper for the entire worker flow
             const result = await new Promise((resolve, reject) => {
@@ -342,8 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         let transcribeOptions = { chunk_length_s: 30, stride_length_s: 5, return_timestamps: true };
                         if (translateCheck && translateCheck.checked) {
                             transcribeOptions.task = 'translate';
-                            statusText.innerHTML = "Auto-Translating any detected language directly to English...";
                         }
+                        statusText.innerHTML = "Compiling Neural Graph in WebAssembly (this can take 30-90 seconds on slower laptops)...";
                         captionWorker.postMessage({ type: 'transcribe', audioDataArray, options: transcribeOptions, duration: sourceVideo.duration });
                     } else if (msg.type === 'result') {
                         captionWorker.removeEventListener('message', messageHandler);

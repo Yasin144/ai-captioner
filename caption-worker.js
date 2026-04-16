@@ -9,7 +9,8 @@ self.onmessage = async (e) => {
     if (e.data.type === 'init') {
         try {
             if (!transcriber) {
-                transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', {
+                // Reduced from base.en down to tiny.en to aggressively prevent WebRTC/WASM memory crashes on slower laptops
+                transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
                     progress_callback: data => {
                         self.postMessage({ type: 'progress', data });
                     }
