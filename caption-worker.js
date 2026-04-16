@@ -5,6 +5,25 @@ env.useBrowserCache = true;
 
 let transcriber = null;
 
+function safeClone(obj) {
+    if (obj === null || typeof obj !== 'object') {
+        if (typeof obj === 'bigint') return Number(obj);
+        if (typeof obj === 'function') return undefined;
+        return obj;
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(item => safeClone(item));
+    }
+    const cloned = {};
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const val = safeClone(obj[key]);
+            if (val !== undefined) cloned[key] = val;
+        }
+    }
+    return cloned;
+}
+
 self.onmessage = async (e) => {
     if (e.data.type === 'init') {
         try {
@@ -29,7 +48,8 @@ self.onmessage = async (e) => {
                     self.postMessage({ type: 'chunk_progress', chunk, duration });
                 }
             });
-            self.postMessage({ type: 'result', result });
+            const safeResult = safeClone(result);
+            self.postMessage({ type: 'result', result: safeResult });
         } catch (err) {
             self.postMessage({ type: 'error', error: err.message });
         }
