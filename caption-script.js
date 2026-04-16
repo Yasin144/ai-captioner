@@ -1,4 +1,7 @@
-let captionWorker = null;
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.1';
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+let transcriber = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const videoInput = document.getElementById('captionVideoInput');
@@ -313,47 +316,33 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             audioDataArray = await extractAudio(videoUrl);
-            if (!captionWorker) {
-                captionWorker = new Worker('caption-worker.js', { type: 'module' });
-                captionWorker.onmessage = (e) => {
-                    const msg = e.data;
-                    if (msg.type === 'progress') {
-                        if (msg.data.status === 'downloading') statusText.innerHTML = `Downloading engine: ${Math.round(msg.data.progress || 0)}%`;
-                        else if (msg.data.status === 'ready') statusText.innerHTML = "AI engine initialized.";
-                    } else if (msg.type === 'chunk_progress') {
-                        if (msg.chunk.timestamp && msg.chunk.timestamp[1] !== null) {
-                            let pct = Math.min(Math.round((msg.chunk.timestamp[1] / msg.duration) * 100), 99);
-                            statusText.innerHTML = `Transcribing Audio to Text... ${pct}%`;
-                        }
+            if (!transcriber) {
+                statusText.innerHTML = "Loading Whisper AI English Engine (~145MB)...";
+                transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', {
+                    progress_callback: data => {
+                        if (data.status === 'downloading') statusText.innerHTML = `Downloading engine: ${Math.round(data.progress || 0)}%`;
+                        else if (data.status === 'ready') statusText.innerHTML = "AI engine initialized.";
                     }
-                };
+                });
             }
 
-            statusText.innerHTML = "Loading Whisper AI English Engine (~45MB)...";
-            
-            // Promise wrapper for the entire worker flow
-            const result = await new Promise((resolve, reject) => {
-                const messageHandler = (e) => {
-                    const msg = e.data;
-                    if (msg.type === 'error') {
-                        captionWorker.removeEventListener('message', messageHandler);
-                        reject(new Error(msg.error));
-                    } else if (msg.type === 'init_done') {
-                        let transcribeOptions = { chunk_length_s: 30, stride_length_s: 5, return_timestamps: true };
-                        if (translateCheck && translateCheck.checked) {
-                            transcribeOptions.task = 'translate';
-                        }
-                        statusText.innerHTML = "Compiling Neural Graph in WebAssembly (this can take 30-90 seconds on slower laptops)...";
-                        captionWorker.postMessage({ type: 'transcribe', audioDataArray, options: transcribeOptions, duration: sourceVideo.duration });
-                    } else if (msg.type === 'result') {
-                        captionWorker.removeEventListener('message', messageHandler);
-                        resolve(msg.result);
+            let transcribeOptions = { 
+                chunk_length_s: 30, 
+                stride_length_s: 5, 
+                return_timestamps: true,
+                chunk_callback: (chunk) => {
+                    if (sourceVideo.duration && chunk.timestamp && chunk.timestamp[1] !== null) {
+                        let pct = Math.min(Math.round((chunk.timestamp[1] / sourceVideo.duration) * 100), 99);
+                        statusText.innerHTML = `Transcribing Audio to Text... ${pct}%`;
                     }
-                };
-                captionWorker.addEventListener('message', messageHandler);
-                // Trigger worker initialization
-                captionWorker.postMessage({ type: 'init' });
-            });
+                }
+            };
+            if (translateCheck && translateCheck.checked) {
+                transcribeOptions.task = 'translate';
+                statusText.innerHTML = "Auto-Translating any detected language directly to English...";
+            }
+
+            const result = await transcriber(audioDataArray, transcribeOptions);
 
             let rawChunks = result.chunks || [];
             let cleanCaptions = [];
