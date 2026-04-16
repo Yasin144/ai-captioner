@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>Standalone AI Video Caption Studio</title>
+<link rel='stylesheet' href='styles.css'>
+<link href='https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap' rel='stylesheet'>
+</head>
+<body style='background-color:#1e1e1e; color:white;'><div class='container' style='padding:20px; max-width:800px; margin:auto;'>
+      <details class="section-card" id="aiCaptionSection">
+        <summary class="section-summary">
+          <span class="summary-head">
+            <span class="section-icon">CAP</span>
+            <span class="summary-copy">
+              <span class="section-title">AI Video Captioning (Local)</span>
+              <span class="section-meta">Automatically generate and burn animated captions onto a video directly in your browser.</span>
+            </span>
+          </span>
+        </summary>
+        <div class="section-content">
+          <div class="upload-block">
+             <label class="field-label" for="captionVideoInput">Source Video</label>
+             <p class="upload-copy">Upload an `mp4` or `webm`. The AI will extract the audio and generate TikTok-style dynamic captions completely offline.</p>
+             <input id="captionVideoInput" class="image-input" type="file" accept="video/*">
+             
+             <div class="toolbar toolbar-compact">
+                 <button id="captionActionBtn" class="primary-btn" type="button" disabled>Generate Captions</button>
+                 <button id="captionExportBtn" class="accent-btn hidden" type="button">Export Result</button>
+                 <button id="captionViralShortBtn" class="primary-btn hidden" type="button" style="background:#f90;">✂️ Export 15s Viral Short</button>
+                 <button id="captionResetBtn" class="ghost-btn hidden" type="button">Clear Video</button>
+             </div>
+
+
+             <div class="display-style-card" style="margin-top:1rem; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <label class="field-label" style="margin: 0;">Advanced Caption Engine Theme</label>
+                </div>
+                
+                <div style="margin-bottom: 12px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; display:flex; flex-direction: column; gap: 8px;">
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionTranslateCheck" style="width: 18px; height: 18px;">
+                         <label for="captionTranslateCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">🌍 Auto-Translate Audio To English</label>
+                         <p class="upload-copy" style="margin: 0;">(Checks Before Generation)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionEmojiCheck" style="width: 18px; height: 18px;" checked>
+                         <label for="captionEmojiCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">🪄 Inject Smart Pop-Emojis</label>
+                         <p class="upload-copy" style="margin: 0;">(Dynamic Reaction SVGs)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionKaraokeCheck" style="width: 18px; height: 18px;" checked>
+                         <label for="captionKaraokeCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">🎤 TikTok Karaoke Highlight</label>
+                         <p class="upload-copy" style="margin: 0;">(Auto-Sync Word Colors)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionBrollCheck" style="width: 18px; height: 18px;">
+                         <label for="captionBrollCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">🎬 Auto B-Roll Interstitials</label>
+                         <p class="upload-copy" style="margin: 0;">(Flash Stock Photos on matched words)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionSfxCheck" style="width: 18px; height: 18px;">
+                         <label for="captionSfxCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">🔊 Reactive Sound Effects</label>
+                         <p class="upload-copy" style="margin: 0;">(Triggers Whoosh/Pop SFX randomly on focus)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px;">
+                         <input type="checkbox" id="captionProgressBarCheck" style="width: 18px; height: 18px;" checked>
+                         <label for="captionProgressBarCheck" style="font-weight: bold; color: #fff; cursor: pointer; flex-grow:1;">⏱️ Viewer Retention Progress Bar</label>
+                         <p class="upload-copy" style="margin: 0;">(Draws playhead filling screen bottom)</p>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px; margin-top:4px;">
+                         <input type="checkbox" id="captionBgMusicCheck" style="width: 18px; height: 18px;" checked>
+                         <label for="bgMusicInput" style="font-weight: bold; color: #fff; cursor: pointer;">🎵 Smart Audio Ducking Track:</label>
+                         <input type="file" id="bgMusicInput" accept="audio/*" style="font-size: 0.8rem; color: #ccc;">
+                         <audio id="bgMusicAudio" loop crossorigin="anonymous"></audio>
+                     </div>
+                     <div style="display:flex; align-items:center; gap: 8px; margin-top:4px;">
+                         <input type="checkbox" id="captionWatermarkCheck" style="width: 18px; height: 18px;" checked>
+                         <label for="captionWatermarkInput" style="font-weight: bold; color: #fff; cursor: pointer;">🛡️ Brand Watermark Overlay (PNG):</label>
+                         <input type="file" id="captionWatermarkInput" accept="image/png, image/jpeg" style="font-size: 0.8rem; color: #ccc;">
+                     </div>
+                </div>
+
+                <div style="display:flex; gap: 10px; margin-bottom: 12px;">
+                    <div style="flex:1;">
+                        <span class="style-label" style="color:#aaa;">Visual Master Theme</span>
+                        <select id="captionStyleSelect" class="theme-select text-style-select" style="margin-top:4px;">
+                           <option value="tiktok" selected>Viral Pop (Bold & Shadow)</option>
+                           <option value="classic">Classic TV (White & Black Box)</option>
+                           <option value="cinematic">Cinematic Fade (Clean White)</option>
+                           <option value="neon">Cyberpunk Neon (Intense Glow)</option>
+                           <option value="glitch">Digital Glitch (RGB Tremor)</option>
+                           <option value="typewriter">Typewriter (Sequential Reveal)</option>
+                           <option value="vaporwave">Vaporwave (Trailing Pink/Blue)</option>
+                           <option value="retro">Arcade Retro (Blocky & Snappy)</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <span class="style-label" style="color:#aaa;">Background Video Filter</span>
+                        <select id="captionFilterSelect" class="theme-select text-style-select" style="margin-top:4px;">
+                           <option value="none" selected>None (Raw Input)</option>
+                           <option value="darken">Darken 50% (Makes Text Pop)</option>
+                           <option value="blur">Heavy Depth Blur</option>
+                           <option value="grayscale">Black & White Grayscale</option>
+                           <option value="sepia">Vintage Sepia Tone</option>
+                           <option value="invert">Inverted Nightmare Mode</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <span class="style-label" style="color:#aaa;">Font Typography</span>
+                        <select id="captionFontSelect" class="theme-select text-style-select" style="margin-top:4px;">
+                           <option value="Nunito, sans-serif" selected>Modern (Nunito)</option>
+                           <option value="Impact, sans-serif">Bold Heavy (Impact)</option>
+                           <option value="'Courier New', monospace">Mechanical (Courier)</option>
+                           <option value="'Comic Sans MS', cursive">Playful (Comic)</option>
+                           <option value="Georgia, serif">Elegant (Georgia)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="display-style-grid" style="gap: 8px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr;">
+                   <label class="style-field">
+                      <span class="style-label">Engine Text Size Scale</span>
+                      <input type="range" id="captionSizeSlider" min="30" max="150" value="80">
+                   </label>
+                   <label class="style-field">
+                      <span class="style-label">Line Spacing Gap</span>
+                      <input type="range" id="captionGapSlider" min="80" max="200" value="120">
+                   </label>
+                   <label class="style-field">
+                      <span class="style-label">Max Width Bound</span>
+                      <input type="range" id="captionWidthSlider" min="30" max="95" value="85">
+                   </label>
+                   <label class="style-field">
+                      <span class="style-label" style="color:#ffcc00; font-weight:bold;">Timing Sync Offset (ms)</span>
+                      <input type="range" id="captionSyncSlider" min="-1500" max="1500" value="0">
+                   </label>
+                   <label class="style-field">
+                      <span class="style-label">Stroke Thickness</span>
+                      <input type="range" id="captionStrokeSlider" min="0" max="100" value="80">
+                   </label>
+                </div>
+                
+                <div style="display:flex; gap: 10px; align-items:center;">
+                    <span class="style-label" style="color:#aaa;">Extracted Text Color:</span>
+                    <input type="color" id="captionColorPicker" value="#fde047" style="border:none; cursor:pointer; background:none; height:30px; width:40px;">
+                    <p class="upload-copy" style="margin: 0; margin-left:auto;"><strong>Position:</strong> Click & drag video to move captions!</p>
+                </div>
+             </div>
+
+             <div id="captionProgress" class="progress-indicator hidden" role="status" style="margin-top:1rem;">
+                 <p id="captionStatusText" class="upload-copy" style="margin-bottom: 0;">Ready.</p>
+             </div>
+
+             <div id="captionVideoContainer" class="hidden" style="margin-top: 1.5rem; border-radius: 8px; overflow: hidden; background: #000; position: relative;">
+                <canvas id="captionRenderCanvas" style="width: 100%; height: auto; display: block;"></canvas>
+                
+                <div class="toolbar toolbar-compact" id="captionVideoControls" style="background: rgba(0,0,0,0.6); padding: 8px; display: flex; align-items: center; justify-content: space-between;">
+                   <button id="captionPlayPauseBtn" class="ghost-btn" type="button" style="color:white; border-color: rgba(255,255,255,0.2);">⏸️ Pause</button>
+                   <input type="range" id="captionSeekSlider" style="flex-grow: 1; margin: 0 1rem;" min="0" max="100" value="0">
+                   <span id="captionTimeDisplay" style="color:#ddd; font-family: monospace; font-size: 0.9rem;">00:00 / 00:00</span>
+                </div>
+                <video id="captionSourceVideo" hidden playsinline crossorigin="anonymous"></video>
+             </div>
+          </div>
+          
+          <div id="captionEditorPanel" class="tool-card hidden" style="margin-top: 1rem;">
+             <div class="tool-card-head">
+                 <span class="module-icon">EDT</span>
+                 <p class="tool-card-title">Edit Auto-Captions</p>
+             </div>
+             <p class="upload-copy">If the AI missed a word, correct it below and it will instantly update on the video.</p>
+             <div id="captionList" style="max-height: 250px; overflow-y: auto; padding-right: 8px;"></div>
+          </div>
+        </div>
+      </details>
+
+</div>
+<script src='caption-script.js' type='module'></script>
+</body>
+</html>
