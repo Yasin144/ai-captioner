@@ -199,6 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!seekSlider.isDragging) seekSlider.value = sourceVideo.currentTime;
         seekSlider.max = sourceVideo.duration || 100;
         timeDisplay.textContent = `${formatTime(sourceVideo.currentTime)} / ${formatTime(sourceVideo.duration)}`;
+        
+        if (isRecording && sourceVideo.duration) {
+            let pct = Math.floor((sourceVideo.currentTime / sourceVideo.duration) * 100);
+            statusText.innerHTML = `🎬 Rendering High-Quality Video... ${pct}%`;
+        }
     });
 
     seekSlider.addEventListener('mousedown', () => seekSlider.isDragging = true);
